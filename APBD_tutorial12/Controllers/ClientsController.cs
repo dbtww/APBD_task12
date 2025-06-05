@@ -20,11 +20,11 @@ public class ClientsController : ControllerBase
         try
         {
             await _clientService.DeleteClientAsync(idClient);
-            return Ok("Client deleted.");
+            return Ok("Client deleted");
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(e.Message);
         }
     }
 }

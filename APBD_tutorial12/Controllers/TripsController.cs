@@ -23,16 +23,16 @@ public class TripsController : ControllerBase
     }
 
     [HttpPost("{idTrip}/clients")]
-    public async Task<IActionResult> AddClientToTrip(int idTrip, [FromBody] CreateClientDTO dto)
+    public async Task<IActionResult> AddClient(int idTrip, [FromBody] CreateClientDTO dto)
     {
         try
         {
             await _tripService.AddClientToTripAsync(idTrip, dto);
-            return Ok("Client added to trip.");
+            return Ok("Client added");
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(e.Message);
         }
     }
 }

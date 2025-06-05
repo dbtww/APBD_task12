@@ -1,29 +1,25 @@
-﻿using Microsoft.Data.SqlClient;
-
-namespace APBD_tutorial12.Services;
+﻿using APBD_tutorial12.Data;
+using APBD_tutorial12.Services;
+using Microsoft.EntityFrameworkCore;
 
 public class ClientService : IClientService
 {
-    private readonly string _connectionString;
+    private readonly SbdContext _context;
 
-    public ClientService(IConfiguration configuration)
+    public ClientService(SbdContext context)
     {
-        _connectionString = configuration.GetConnectionString("Default")!;
+        _context = context;
     }
 
     public async Task DeleteClientAsync(int idClient)
     {
-        using var conn = new SqlConnection(_connectionString);
-        await conn.OpenAsync();
+        var hasTrips = await _context.ClientTrips.AnyAsync(ct => ct.IdClient == idClient);
+        if (hasTrips) throw new Exception("Client is assigned to a trip");
 
-        var checkCmd = new SqlCommand("SELECT COUNT(1) FROM Client_Trip WHERE IdClient = @id", conn);
-        checkCmd.Parameters.AddWithValue("@id", idClient);
+        var client = await _context.Clients.FindAsync(idClient);
+        if (client == null) throw new Exception("Client not found");
 
-        if ((int)await checkCmd.ExecuteScalarAsync() > 0)
-            throw new Exception("Client is assigned to a trip and cannot be deleted");
-
-        var deleteCmd = new SqlCommand("DELETE FROM Client WHERE IdClient = @id", conn);
-        deleteCmd.Parameters.AddWithValue("@id", idClient);
-        await deleteCmd.ExecuteNonQueryAsync();
+        _context.Clients.Remove(client);
+        await _context.SaveChangesAsync();
     }
 }
